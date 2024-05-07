@@ -18,11 +18,9 @@ class HomeController extends GetxController {
   RxList<Hit> hitList = <Hit>[].obs;
   RxList<Hit> filterHitList = <Hit>[].obs;
   var searchController = TextEditingController();
-  late FirebaseMessaging _firebaseMessaging;
-  var isMoreDataLoading=false.obs;
+  var isMoreDataLoading = false.obs;
   ScrollController scrollController = ScrollController();
-  var page=1.obs;
-
+  var page = 1.obs;
 
   //==============================================================================
   // * GetX Life cycle *
@@ -34,31 +32,11 @@ class HomeController extends GetxController {
     scrollController.addListener(scrollListener);
 
     initializeFirebaseMessaging();
-     getLocalDb();
+    getLocalDb();
 
     super.onInit();
   }
 
-  Future<void> scrollListener() async {
-    if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
-      if (page.value <= ((50/(imgDataResponse.value.totalHits?? 500)) * 100)) {
-        if (isMoreDataLoading.isFalse) {
-          isMoreDataLoading(true);
-          await getImageData(page.value);
-        }
-      }
-    }
-  }
-
-  Future<void> initFunction() async {
-    isLoading(true);
-    getImageData(1).then((value) => filterImages(emptyString));
-
-    isLoading(false);
-
-
-
-  }
   @override
   void onReady() {
     super.onReady();
@@ -74,6 +52,30 @@ class HomeController extends GetxController {
   // * Helper *
   //==============================================================================
 
+  // function for initial loading
+  Future<void> initFunction() async {
+    isLoading(true);
+    getImageData(1).then((value) => filterImages(emptyString));
+
+    isLoading(false);
+  }
+
+  ///  method with detect scrolling
+
+  Future<void> scrollListener() async {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      if (page.value <=
+          ((50 / (imgDataResponse.value.totalHits ?? 500)) * 100)) {
+        if (isMoreDataLoading.isFalse) {
+          isMoreDataLoading(true);
+          await getImageData(page.value);
+        }
+      }
+    }
+  }
+
+  /// for inititalize the firebase messeging
   void initializeFirebaseMessaging() async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -95,7 +97,8 @@ class HomeController extends GetxController {
         print('Got a message whilst in the foreground!');
         print('Message data: ${message.data}');
         if (message.notification != null) {
-          print('Message also contained a notification: ${message.notification}');
+          print(
+              'Message also contained a notification: ${message.notification}');
         }
       });
     } catch (e) {
@@ -104,12 +107,12 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> getImageData(int  pag) async {
-    try {
+  //method for fetch data from the api
 
+  Future<void> getImageData(int pag) async {
+    try {
       final response = await Repo.getInstance().getImageData(page);
-      if(response.hits!=null&&( response.hits?.isNotEmpty??false))
-      {
+      if (response.hits != null && (response.hits?.isNotEmpty ?? false)) {
         page++;
       }
       imgDataResponse.value = response;
@@ -119,27 +122,26 @@ class HomeController extends GetxController {
 
       // });
     } catch (e) {
-
-
-    }
-    finally{
+    } finally {
       isMoreDataLoading(false);
     }
   }
 
+// method for the filter data
   void filterImages(String? query) {
     if (query == null || query.isEmpty) {
       filterHitList = hitList;
       filteredImgData.value = imgDataResponse.value;
     } else {
       filterHitList.value = hitList.where((image) {
-        return (image.tags != null &&
-            image.tags!.toLowerCase().contains(query.toLowerCase()));
-      }).toList() ??
+            return (image.tags != null &&
+                image.tags!.toLowerCase().contains(query.toLowerCase()));
+          }).toList() ??
           [];
     }
   }
 
+  /// method for the store the data into hive database
   Future<void> storeLocalData(ImageResponseModel imageData) async {
     try {
       final box = await Hive.openBox<Map>('imageData');
@@ -155,6 +157,7 @@ class HomeController extends GetxController {
     }
   }
 
+// get the data stored data into Hive
   Future<void> getLocalDb() async {
     try {
       final box = await Hive.openBox<Map>('imageData');
@@ -175,6 +178,8 @@ class HomeController extends GetxController {
       throw 'Error retrieving image data: $e';
     }
   }
+
+  // method for the perform toggle like function
 
   Future<void> toggleLike(int imageId) async {
     try {

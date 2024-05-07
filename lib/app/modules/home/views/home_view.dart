@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:morpheme_cached_network_image/morpheme_cached_network_image.dart';
 import '../../../constants/index.dart';
-import '../../../reusable/image_dialog.dart';
 import '../../../reusable/index.dart';
 import '../../../utils/index.dart';
 import '../controllers/home_controller.dart';
@@ -46,7 +45,7 @@ class HomeView extends GetView<HomeController> {
 
                           children: [
                             GridView.builder(
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
 
                               padding: EdgeInsets.only(
@@ -115,7 +114,7 @@ class HomeView extends GetView<HomeController> {
                               },
                             ),
                             if( controller.isMoreDataLoading.isTrue)
-                              SizedBox(
+                              const SizedBox(
                                 height: 500,
                                 width: 500,
                                 child: Center(child: Column(
@@ -171,7 +170,7 @@ class HomeView extends GetView<HomeController> {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10)),
                 child: MorphemeCachedNetworkImage(
-                  loadingBuilder: (context) => Center(child: CupertinoActivityIndicator()),
+                  loadingBuilder: (context) => const Center(child: CupertinoActivityIndicator()),
                   imageUrl: image,
                   fit: BoxFit.cover,
                   width: Get.width,
